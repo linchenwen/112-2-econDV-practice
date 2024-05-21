@@ -55,7 +55,7 @@ merged_data <- merged_data %>%
 income_choropleth <- ggplot(data = merged_data) +
   geom_sf(aes(fill = 收入等級), color = "white", size = 2.0) +
   scale_fill_brewer(palette = "Reds", name = "所得收入(萬)") +
-  geom_point(aes(x = lon, y = lat, size = 儲蓄率等級), color = "white", shape = 21, fill ="green",stroke = 1.5) + 
+  geom_point(aes(x = lon, y = lat, size = 儲蓄率等級), color = "white", shape = 21, fill ="#99ff00",stroke = 1.5) + 
   scale_size_manual(values = c(5, 9, 12, 25), name = "儲蓄率(百分比)") +  # 手動設定點的大小
   theme_void() +
   labs(
