@@ -1,0 +1,76 @@
+library(tidyverse)
+library(sf)
+library(ggplot2)
+library(scales)  # 用於格式化數字
+
+# 匯入台灣地圖
+shapeData <- st_read("C:/Users/wen/Downloads/mapdata202301070205 (2)/COUNTY_MOI_1090820.shp")
+
+# 篩選北台灣縣市的地理數據
+north_taiwan <- shapeData %>%
+  filter(COUNTYNAME %in% c("臺北市", "新北市", "基隆市", "桃園市", "新竹縣", "宜蘭縣"))
+
+# 檢視中心點數據框結構
+glimpse(north_taiwan)
+
+# 匯入北台灣縣市的所得數據的 CSV 文件
+income_data <- read_csv("C:/Users/wen/OneDrive/Desktop/資料視覺化作業/所得與儲蓄率.csv")
+
+# 將所得數據與北台灣地理數據合併
+combined_data <- north_taiwan %>%
+  left_join(income_data, by = c("COUNTYNAME" = "地區別"))
+
+# 創建縣市的中心點資料框
+center_points <- data.frame(
+  COUNTYNAME = c("臺北市", "新北市", "基隆市", "桃園市", "新竹縣", "宜蘭縣"),
+  lon = c(121.5533, 121.5953, 121.7219, 121.2578, 121.1637, 121.6456),
+  lat = c(25.08292, 24.98703, 25.12168, 24.9032, 24.68101, 24.57367)
+)
+
+merged_data <- merge(combined_data, center_points, by = "COUNTYNAME", all.x = TRUE)
+
+# 指定區間範圍
+breaks <- c(1000000, 1200000, 1400000, 1600000, 1800000, Inf)
+labels <- c("0-100萬", "100-120萬", "120-140萬", "140-160萬", "160萬以上")
+
+# 將所得收入分為指定區間並標示以千位數分隔符號
+merged_data <- merged_data %>%
+  mutate(
+    收入等級 = cut(所得收入, breaks = breaks, labels = labels, right = FALSE),
+    所得收入標示 = comma(所得收入)
+  )
+
+# 手動設定儲蓄率分級區間
+savings_breaks <- c(20, 22, 24, 26, Inf)
+savings_labels <- c("20-22", "22-24", "24-26", "26以上")
+
+# 將儲蓄率分為手動設定的區間
+merged_data <- merged_data %>%
+  mutate(
+    儲蓄率等級 = cut(儲蓄率, breaks = savings_breaks, labels = savings_labels, right = FALSE)
+  )
+
+
+# 繪製面量與分級符號圖（包括儲蓄率）
+income_choropleth <- ggplot(data = merged_data) +
+  geom_sf(aes(fill = 收入等級), color = "white", size = 2.0) +
+  scale_fill_brewer(palette = "Reds", name = "所得收入(萬)") +
+  geom_point(aes(x = lon, y = lat, size = 儲蓄率等級), color = "white", shape = 21, fill ="green",stroke = 1.5) + 
+  scale_size_manual(values = c(5, 9, 12, 25), name = "儲蓄率(百分比)") +  # 手動設定點的大小
+  theme_void() +
+  labs(
+    title = "北台灣縣市收入與儲蓄狀況",
+    subtitle = "高收入縣市真的更會存錢嗎",
+    caption = "資料來源：勞動部勞動統計查詢網"
+  ) +
+  coord_sf(
+    xlim = c(120.5, 122.2),  # 調整經度範圍以放大北台灣
+    ylim = c(24, 25.5),       # 調整緯度範圍以放大北台灣
+    expand = FALSE
+  ) +
+  theme(plot.title = element_text(size = 20)) +
+  theme(plot.subtitle = element_text(size = 15, margin = margin(t = 10))) +
+  theme(plot.caption = element_text(size = 15))
+
+print(income_choropleth)
+
