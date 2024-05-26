@@ -1,0 +1,29 @@
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+growgam1 <- data.frame(
+  Active_Exercise = c(9, 9.5, 9.75, 10, 13, 9.5),
+  Eight_Week_Control = c(13.25, 11.5, 12, 13.5, 11.5, NA)  # NA 表示缺失值
+)
+
+# 将数据转换为长格式
+data_long <- growgam1 %>%
+  pivot_longer(cols = everything(), names_to = "Group", values_to = "Age") 
+
+# 执行 t 检验
+t_test_result <- t.test(Age ~ Group, data = data_long)
+
+# 执行简单线性回归
+lm_result <- lm(Age ~ Group, data = data_long)
+
+ggplot(data_long, aes(x = Group, y = Age)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.3, color = "red") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Childen’s ages at time of first walking aline by randomisation group",
+       subtitle = "Age in months for walking alone",
+       caption = "資料來源：簡單線性迴歸 Simple Linear Regression",
+       x = "Age at Independent Walking by Group",
+       y = "Age at Independent Walking") +
+  theme_minimal()
