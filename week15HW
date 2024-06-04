@@ -1,0 +1,32 @@
+library(ggplot2)
+
+# 定義資料（保持不變）
+route_data <- data.frame(
+  location = c("Passy", "Cote de la cascade de couer", "Passy Chef Lieu", 
+               "Sallanches", "Domancy", "Cote de Domancy", "Combloux"),
+  distance = c(0, 4.5, 8.1, 13.5, 16.9, 19, 22.4), # 假設各地點之間的距離
+  elevation = c(579, 670, 698, 550, 559, 810, 974)
+)
+
+# 繪製地形圖
+ggplot(route_data, aes(x = distance, y = elevation)) +
+  geom_area(fill = "yellow", alpha = 0.6) +  # 添加淡黄色填充区域
+  geom_line(color = "yellow", size = 1.5) +  # 保留黄色线条
+  geom_point(size = 3, color = "white") +
+  geom_text(aes(label = location), vjust = -1, size = 4, color = "black") +
+  scale_x_continuous(name = "Distance (km)") +
+  scale_y_continuous(name = "Elevation (m)") +
+  labs(
+    title = "Tour de France 2023 Stage 16",
+    subtitle = "From Passy to Combloux  22.4km"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "grey"),
+    plot.background = element_rect(fill = "grey"),
+    text = element_text(color = "black"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black"),
+    plot.title = element_text(size = 16, face = "bold"),  # 主标题设置
+    plot.subtitle = element_text(size = 12)  # 副标题设置
+  )
